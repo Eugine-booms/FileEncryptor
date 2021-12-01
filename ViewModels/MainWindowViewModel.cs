@@ -53,8 +53,6 @@ namespace FileEncryptor.ViewModels
 
         #region Команда выбора файла
         private ICommand _selectFileCommand;
-
-
         public ICommand SelectFileCommand =>
             _selectFileCommand ??=
             new LambdaCommand(OnSelectFileCommandExecute);
@@ -63,12 +61,45 @@ namespace FileEncryptor.ViewModels
             if (!_userDialog.OpenFile("Выбор файла", out var filePath)) return;
             var selected_file= new FileInfo(filePath);
             SelectedFile = selected_file.Exists ? selected_file : null;
-
-
         }
 
 
+        #region Команда Encrypt
+        private ICommand _EncryptCommand;
+        /// <summary>"Описание"</summary>
+        public ICommand EncryptCommand =>
+        _EncryptCommand ??=
+        new LambdaCommand(OnEncryptCommandExecute, CanEncryptCommandExecuted);
+        private void OnEncryptCommandExecute(object p)
+        {
+            if (!(p is FileInfo file)) return;
+        }
+        private bool CanEncryptCommandExecuted(object p)
+        {
+            return p is FileInfo file && file.Exists && !string.IsNullOrWhiteSpace(Password);
+        }
         #endregion
+
+        #region Команда Decrypt
+        private ICommand _DecryptCommand;
+        /// <summary>"Описание"</summary>
+        public ICommand DecryptCommand =>
+        _DecryptCommand ??=
+        new LambdaCommand(OnDecryptCommandExecute, CanDecryptCommandExecuted);
+        private void OnDecryptCommandExecute(object p)
+        {
+            if (!(p is FileInfo file)) return;
+        }
+        private bool CanDecryptCommandExecuted(object p)
+        {
+            return p is FileInfo file && file.Exists && !string.IsNullOrWhiteSpace(Password);
+        }
+        #endregion
+
+
+        #endregion
+
+
         #endregion
 
         #region Конструктор
@@ -76,11 +107,7 @@ namespace FileEncryptor.ViewModels
         {
             this._userDialog = userDialog;
         }
-
-        public MainWindowViewModel()
-        {
-            this._userDialog = new UserDialogService();
-        }
+       
         #endregion
     }
 }
