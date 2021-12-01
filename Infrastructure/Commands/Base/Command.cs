@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using System.Windows.Markup;
 
 namespace FileEncryptor.Infrastructure.Commands.Base
 {
-    internal abstract class Command : ICommand
+    [MarkupExtensionReturnType(typeof(Command))]
+    [ContentProperty("Executable")]
+    internal abstract class Command : MarkupExtension, ICommand 
     {
         public event EventHandler CanExecuteChanged
         {
@@ -13,9 +16,11 @@ namespace FileEncryptor.Infrastructure.Commands.Base
             remove => CommandManager.RequerySuggested -= value;
         }
 
-        private bool _executadle;
+        private bool _executadle=true;
 
-        public bool Executadlex { get => _executadle;
+        public bool Executable 
+        { 
+            get => _executadle;
             set
             {
                 if (_executadle == value) return;

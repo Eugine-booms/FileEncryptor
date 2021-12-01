@@ -3,6 +3,7 @@ using FileEncryptor.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace FileEncryptor
@@ -12,6 +13,9 @@ namespace FileEncryptor
     /// </summary>
     public partial class App : Application
     {
+        public static Window FocusedWindow => Current.Windows.Cast<Window>().FirstOrDefault(w => w.IsFocused);
+        public static Window ActiveWindow => Current.Windows.Cast<Window>().FirstOrDefault(w => w.IsActive);
+
         private static IHost __host;
         public static IHost Host => __host ??= Programm.CreateHostBuilder(Environment.GetCommandLineArgs()).Build();
         internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services)

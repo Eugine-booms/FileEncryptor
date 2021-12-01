@@ -5,14 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileEncryptor"
         xmlns:vm="clr-namespace:FileEncryptor.ViewModels"
+        xmlns:comm="clr-namespace:FileEncryptor.Infrastructure.Commands"
         DataContext="{Binding Path=MainViewModel, Source={StaticResource Locator}}"
         mc:Ignorable="d"
-        Title="{Binding Path=MainViewModel.Title, Source={StaticResource Locator}}" Height="450" Width="800">
+        Title="{Binding Path=MainViewModel.Title, Source={StaticResource Locator}}" Height="450" Width="800"
+        Name="main">
     <DockPanel>
         
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
-                <MenuItem Header="Выход"></MenuItem>
+                <MenuItem Header="Выход" CommandParameter="{Binding }">
+                    <MenuItem.Command >
+                        <comm:CloseWindow Executable="True"/>
+                    </MenuItem.Command>
+                </MenuItem>
+                <MenuItem Header="Выход2" Command="{Binding Source={comm:CloseWindow Executable=True}}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <MenuItem Header="Выход3" Command="{StaticResource CloseWindowCommand}" CommandParameter=""/>
             </MenuItem>
             
         </Menu>

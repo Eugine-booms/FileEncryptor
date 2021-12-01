@@ -1,8 +1,10 @@
 ﻿using FileEncryptor.Infrastructure.Commands.Base;
 using System;
+using System.Windows.Markup;
 
 namespace FileEncryptor.Infrastructure.Commands
 {
+    [MarkupExtensionReturnType(typeof(LambdaCommand))]
     internal class LambdaCommand : Command
     {
 
@@ -23,5 +25,10 @@ namespace FileEncryptor.Infrastructure.Commands
 
         protected override void Execute(object parameter) => _execute?.Invoke(parameter);
         protected override bool CanExecute(object parameter) => _canExecute?.Invoke(parameter) ?? true;
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
+        }
     }
 }
