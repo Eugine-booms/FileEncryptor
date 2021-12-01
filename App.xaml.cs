@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Windows;
 
 namespace FileEncryptor
 {
@@ -7,6 +10,30 @@ namespace FileEncryptor
     /// </summary>
     public partial class App : Application
     {
+        private static IHost __host;
+        public static IHost Host => __host ??= Programm.CreateHostBuilder(Environment.GetCommandLineArgs()).Build();
+        internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services)
+        {
+           
+        }
 
+        protected  override async void OnStartup(StartupEventArgs e)
+        {
+            var host = Host;   //создает хост
+
+            base.OnStartup(e);   //выполняются операции по иниализации приложения 
+
+           await host.RunAsync().ConfigureAwait(false);            //запускаем наш хост
+        }
+
+        protected  override async void OnExit(ExitEventArgs e)
+        {
+            var host = Host;
+            
+            base.OnExit(e);
+            using (Host)                                          //получаем перехват ошибок в осинхронном коде и поконцу вызываем Dispose
+                await host.StopAsync().ConfigureAwait(false);
+            
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
 
 
 namespace FileEncryptor
@@ -13,5 +15,11 @@ namespace FileEncryptor
             app.InitializeComponent();
             app.Run();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices(App.ConfigureServices);
+                        
+                
     }
 }
