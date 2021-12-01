@@ -5,6 +5,8 @@
              xmlns:vm="clr-namespace:FileEncryptor.ViewModels"
              StartupUri="Views\Windows\MainWindow.xaml">
     <Application.Resources>
-        <vm:ViewModelLocator x:Key="Locator"/>
+        <ResourceDictionary>
+            <vm:ViewModelLocator x:Key="Locator"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
