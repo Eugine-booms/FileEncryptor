@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Markup;
 
 namespace FileEncryptor.ViewModels.Base
 {
@@ -22,5 +23,6 @@ namespace FileEncryptor.ViewModels.Base
             OnPropertyChange(PropertyName);
             return true;
         }
+       
     }
 }
