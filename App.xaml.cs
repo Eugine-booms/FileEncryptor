@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FileEncryptor.Services;
+using FileEncryptor.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Windows;
@@ -14,7 +16,7 @@ namespace FileEncryptor
         public static IHost Host => __host ??= Programm.CreateHostBuilder(Environment.GetCommandLineArgs()).Build();
         internal static void ConfigureServices(HostBuilderContext host, IServiceCollection services)
         {
-           
+            services.RegisterServices().RegisterViewModel();
         }
 
         protected  override async void OnStartup(StartupEventArgs e)

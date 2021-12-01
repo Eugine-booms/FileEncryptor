@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileEncryptor"
         xmlns:vm="clr-namespace:FileEncryptor.ViewModels"
-        DataContext="{vm:MainVindowsViewModel}"
+        DataContext="{Binding Path=MainViewModel, Source={StaticResource Locator}}"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="450" Width="800">
+        Title="{Binding Path=MainViewModel.Title, Source={StaticResource Locator}}" Height="450" Width="800">
     <Grid>
 
     </Grid>

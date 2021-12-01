@@ -10,7 +10,7 @@ namespace FileEncryptor.ViewModels
 
         #region  string Title Заголовок Окна
         ///<summary> Заголовок Окна
-        private string _Title;
+        private string _Title = "Стартовое Окно";
         ///<summary> Заголовок Окна
         public string Title
         {
