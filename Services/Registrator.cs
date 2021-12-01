@@ -9,6 +9,7 @@ namespace FileEncryptor.Services
   internal static class Registrator
     {
         internal static IServiceCollection RegisterServices(this IServiceCollection services) => services
-            .AddTransient<IUserDialog, UserDialogService>();
+            .AddTransient<IUserDialog, UserDialogService>()
+            .AddTransient <IEncryptor, Rfc2898Encryptor>();
     }
 }
