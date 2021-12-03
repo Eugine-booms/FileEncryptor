@@ -83,7 +83,128 @@ namespace FileEncryptor.Services
             return true;
         }
 
-        public async Task EncryptAcync(
+        //public async Task EncryptAcync(
+        //    string sourcePath,
+        //    string destinationPath,
+        //    string password,
+        //    int bufferLenght = 102400,
+        //    IProgress<double> progress = null,
+        //    CancellationToken Cancel = default)
+        //{
+        //    try
+        //    {
+        //        #region Проверки
+        //        if (!File.Exists(sourcePath)) throw new FileNotFoundException("Файл-источник для процесса шифрования не найден", sourcePath);
+        //        if (bufferLenght <= 0) throw new ArgumentOutOfRangeException(nameof(bufferLenght), "Размер буффера для чтения должен быть больше нуля"); 
+        //        #endregion
+        //        var encryptor = GetEncryptor(password);
+        //        await using var destination_encrypted = File.Create(destinationPath, bufferLenght);
+        //        await using var destanation = new CryptoStream(destination_encrypted, encryptor, CryptoStreamMode.Write);
+        //        await using var source = File.OpenRead(sourcePath);
+
+
+        //        Cancel.ThrowIfCancellationRequested();
+
+
+        //        var fileLenght = source.Length;
+
+        //        int reader;
+        //        var buffer = new byte[bufferLenght];
+        //        do
+        //        {
+        //            Thread.Sleep(1);
+        //            //   ConfigureAwait(false); позволяет не возвращаться в вызывающий поток
+        //            reader = await source.ReadAsync(buffer, Cancel).ConfigureAwait(false);
+        //            await destanation.WriteAsync(buffer, 0, reader, Cancel).ConfigureAwait(false);
+
+        //            var posision = source.Position;
+        //            progress?.Report((double)posision/fileLenght);
+
+        //            if (Cancel.IsCancellationRequested)
+        //            {
+        //                //очистка
+        //                Cancel.ThrowIfCancellationRequested();
+        //            }
+        //        } while (reader > 0);
+        //        destanation.FlushFinalBlock();
+
+        //        progress.Report(1);
+        //    }
+        //    catch (OperationCanceledException)
+        //    {
+        //        File.Delete(destinationPath);
+        //        throw;
+        //    }
+        //    catch (Exception error)
+        //    {
+        //        Debug.WriteLine("Error in EncryptAsync: \r\n {0}", error);
+        //        throw;
+        //    }
+        //}
+        //// acync заставляет компилятор по другому обрабатывать метод. Без него метод не будет асинхронным. С async компилятор переписывает метод
+        //public async Task<bool> DecryptAcync(
+        //    string sourcePath,
+        //    string destinationPath,
+        //    string password,
+        //    int bufferLenght = 102400,
+        //    IProgress<double> progress = null,
+        //    CancellationToken Cancel = default)
+        //{
+        //    if (!File.Exists(sourcePath)) throw new FileNotFoundException("Файл-источник для процесса шифрования не найден", sourcePath);
+        //    if (bufferLenght <= 0) throw new ArgumentOutOfRangeException(nameof(bufferLenght), "Размер буффера для чтения должен быть больше нуля");
+
+        //    var decryptor = GetDecryptor(password);
+
+        //    try
+        //    {
+        //        await using var destination_decrypted = File.Create(destinationPath, bufferLenght);
+        //        await using var destination = new CryptoStream(destination_decrypted, decryptor, CryptoStreamMode.Write);
+        //        await using var encryptor_source = File.OpenRead(sourcePath);
+        //        var buffer = new byte[bufferLenght];
+        //        int reader;
+        //        var lastpercent = 0.0;
+
+        //        var fileLenght = encryptor_source.Length;
+        //        do
+        //        {
+        //            Thread.Sleep(2);
+        //            reader = await encryptor_source.ReadAsync(buffer, 0, bufferLenght, Cancel);
+        //            await destination.WriteAsync(buffer, 0, reader, Cancel);
+
+        //            var position = encryptor_source.Position;
+        //            var percent = (double)position / fileLenght;
+        //            if (percent-lastpercent>=0.1)
+        //            {
+        //                progress?.Report(percent);
+        //                lastpercent = percent;
+        //            }
+
+        //        } while (reader > 0);
+        //        try
+        //        {
+        //            destination.FlushFinalBlock();
+        //            progress?.Report(1);
+        //        }
+        //        catch (CryptographicException)
+        //        {
+        //            return false;
+
+        //        }
+
+        //        return true;
+        //    }
+        //    catch (OperationCanceledException)
+        //    {
+        //        throw;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        File.Delete(destinationPath);
+        //        throw;
+        //    }
+        //}
+        public async Task<bool> CryptAcync(
+            Methodd mode,
             string sourcePath,
             string destinationPath,
             string password,
@@ -91,117 +212,74 @@ namespace FileEncryptor.Services
             IProgress<double> progress = null,
             CancellationToken Cancel = default)
         {
-            try
-            {
 
-
-                #region Проверки
-                if (!File.Exists(sourcePath)) throw new FileNotFoundException("Файл-источник для процесса шифрования не найден", sourcePath);
-                if (bufferLenght <= 0) throw new ArgumentOutOfRangeException(nameof(bufferLenght), "Размер буффера для чтения должен быть больше нуля"); 
-                #endregion
-                var encryptor = GetEncryptor(password);
-                await using var destination_encrypted = File.Create(destinationPath, bufferLenght);
-                await using var destanation = new CryptoStream(destination_encrypted, encryptor, CryptoStreamMode.Write);
-                await using var source = File.OpenRead(sourcePath);
-                
-                
-                Cancel.ThrowIfCancellationRequested();
-                
-                
-                var fileLenght = source.Length;
-
-                int reader;
-                var buffer = new byte[bufferLenght];
-                do
-                {
-                    Thread.Sleep(1);
-                    //   ConfigureAwait(false); позволяет не возвращаться в вызывающий поток
-                    reader = await source.ReadAsync(buffer, Cancel).ConfigureAwait(false);
-                    await destanation.WriteAsync(buffer, 0, reader, Cancel).ConfigureAwait(false);
-
-                    var posision = source.Position;
-                    progress?.Report((double)posision/fileLenght);
-                    
-                    if (Cancel.IsCancellationRequested)
-                    {
-                        //очистка
-                        Cancel.ThrowIfCancellationRequested();
-                    }
-                } while (reader > 0);
-                destanation.FlushFinalBlock();
-
-                progress.Report(1);
-            }
-            catch (OperationCanceledException)
-            {
-                File.Delete(destinationPath)
-                throw;
-            }
-            catch (Exception error)
-            {
-                Debug.WriteLine("Error in EncryptAsync: \r\n {0}", error)
-                throw;
-            }
-        }
-        // acync заставляет компилятор по другому обрабатывать метод. Без него метод не будет асинхронным. С async компилятор переписывает метод
-        public async Task<bool> DecryptAcync(
-            string sourcePath,
-            string destinationPath,
-            string password,
-            int bufferLenght = 102400,
-            IProgress<double> progress = null,
-            CancellationToken Cancel = default)
-        {
             if (!File.Exists(sourcePath)) throw new FileNotFoundException("Файл-источник для процесса шифрования не найден", sourcePath);
             if (bufferLenght <= 0) throw new ArgumentOutOfRangeException(nameof(bufferLenght), "Размер буффера для чтения должен быть больше нуля");
 
-           
-
-            var decryptor = GetDecryptor(password);
-           
+            ICryptoTransform transformWey = null;
+            if (mode == Methodd.Encrypd)
+                transformWey = GetEncryptor(password);
+            if (mode == Methodd.DeCrypt)
+                transformWey = GetDecryptor(password);
 
             try
             {
+                
                 await using var destination_decrypted = File.Create(destinationPath, bufferLenght);
-                await using var destination = new CryptoStream(destination_decrypted, decryptor, CryptoStreamMode.Write);
-                await using var encryptor_source = File.OpenRead(sourcePath);
+                await using var destination_cryptor = new CryptoStream(destination_decrypted, transformWey, CryptoStreamMode.Write);
+                await using var cryptor_source = File.OpenRead(sourcePath);
                 var buffer = new byte[bufferLenght];
                 int reader;
+                var lastpercent = 0.0;
 
-                var fileLenght = encryptor_source.Length;
+                var fileLenght = cryptor_source.Length;
                 do
                 {
-                    Thread.Sleep(2);
-                    reader = await encryptor_source.ReadAsync(buffer, 0, bufferLenght, Cancel);
-                    await destination.WriteAsync(buffer, 0, reader, Cancel);
+                    Cancel.ThrowIfCancellationRequested();
+                    Thread.Sleep(0);
+                    reader = await cryptor_source.ReadAsync(buffer, 0, bufferLenght, Cancel);
 
-                    var position = encryptor_source.Position;
-                    progress?.Report((double)position/fileLenght)
+                    await destination_cryptor.WriteAsync(buffer, 0, reader, Cancel);
+                    var position = cryptor_source.Position;
+                    var percent = (double)position / fileLenght;
+                    if (percent - lastpercent >= 0.01)
+                    {
+                        progress?.Report(percent);
+                        lastpercent = percent;
+                    }
+
                 } while (reader > 0);
-                try
-                {
-                    destination.FlushFinalBlock();
-                    progress?.Report(1);
-                }
-                catch (CryptographicException)
-                {
-                    return false;
 
-                }
-
+                destination_cryptor.FlushFinalBlock();
+                progress?.Report(1);
                 return true;
             }
             catch (OperationCanceledException)
             {
-                throw;
+
+                File.Delete(destinationPath);
+                progress?.Report(0);
+                return false;
+            }
+            catch (CryptographicException e)
+            {
+                File.Delete(destinationPath);
+                return false;
             }
             catch (Exception)
             {
-                File.Delete(destinationPath);
+                  
                 throw;
             }
         }
 
-
     }
+    public enum Methodd
+    {
+        Encrypd,
+        DeCrypt
+    }
+
+
+
 }
