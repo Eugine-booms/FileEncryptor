@@ -1,8 +1,11 @@
 ﻿using FileEncryptor.Infrastructure.Commands;
+using FileEncryptor.Infrastructure.Commands.Base;
 using FileEncryptor.Services.Interfaces;
+using FileEncryptor.Views;
 
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
 using System.Windows.Input;
 
 namespace FileEncryptor.ViewModels
@@ -87,8 +90,8 @@ namespace FileEncryptor.ViewModels
         /// <summary>"Описание"</summary>
         public ICommand EncryptCommand =>
         _EncryptCommand ??=
-        new LambdaCommand(OnEncryptCommandExecute, CanEncryptCommandExecuted);
-        private void OnEncryptCommandExecute(object p)
+        new LambdaCommand(OnEncryptCommandExecuted, CanEncryptCommandExecute);
+        private async void OnEncryptCommandExecuted(object p)
         {
             var file = p as FileInfo ?? SelectedFile;
             if (file is null) return;
@@ -97,14 +100,21 @@ namespace FileEncryptor.ViewModels
             if (!(_userDialog.SaveFile(
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
             var timer = Stopwatch.StartNew();
-                _encryptor.Encrypt(file.FullName, destanation_filePath, Password);
+
+            ((Command)EncryptCommand).Executable = false;
+            var encryptor_task= _encryptor.EncryptAcync(file.FullName, destanation_filePath, Password);
+            await encryptor_task;
+            ((Command)EncryptCommand).Executable = true;
+
+
+            
             timer.Stop();
             _userDialog.Information("Шифрование", $"Шифрование выполнено успешно {timer.Elapsed.TotalMilliseconds} мс");
             Timer = timer.Elapsed.TotalMilliseconds;
 
 
         }
-        private bool CanEncryptCommandExecuted(object p)
+        private bool CanEncryptCommandExecute(object p)
         {
 
             return (p is FileInfo file && file.Exists) && !string.IsNullOrWhiteSpace(Password);
@@ -116,8 +126,8 @@ namespace FileEncryptor.ViewModels
         /// <summary>"Описание"</summary>
         public ICommand DecryptCommand =>
         _DecryptCommand ??=
-        new LambdaCommand(OnDecryptCommandExecute, CanDecryptCommandExecuted);
-        private void OnDecryptCommandExecute(object p)
+        new LambdaCommand(OnDecryptCommandExecuted, CanDecryptCommandExecute);
+        private async void OnDecryptCommandExecuted(object p)
         {
             var file = p as FileInfo ?? SelectedFile;
             if (file is null) return;
@@ -126,7 +136,13 @@ namespace FileEncryptor.ViewModels
             if (!(_userDialog.SaveFile(
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
             var timer = Stopwatch.StartNew();
-            var success=_encryptor.Decrypt(file.FullName, destanation_filePath, Password);
+
+            ((Command)DecryptCommand).Executable = false;
+            var decryptionTask=_encryptor.DecryptAcync(file.FullName, destanation_filePath, Password);
+            var success = await decryptionTask;
+            ((Command)DecryptCommand).Executable = true;
+
+
             timer.Stop();
             if (success)
             {
@@ -136,11 +152,28 @@ namespace FileEncryptor.ViewModels
             else
                 _userDialog.Error("Шифрование", "Дешифрирование выполнено с ошибкой! Указан неверный пароль");
         }
-        private bool CanDecryptCommandExecuted(object p)
+        private bool CanDecryptCommandExecute(object p)
         {
             return (p is FileInfo file && file.Exists || SelectedFile != null) && !string.IsNullOrWhiteSpace(Password);
         }
         #endregion
+
+
+        #region Команда OpenPhoneDialogCommand
+        private ICommand _OpenPhoneDialogCommand;
+        /// <summary>"Описание"</summary>
+        public ICommand OpenPhoneDialogCommand =>
+        _OpenPhoneDialogCommand ??=
+        new LambdaCommand(OnOpenPhoneDialogCommandExecute, CanOpenPhoneDialogCommandExecuted);
+        private void OnOpenPhoneDialogCommandExecute(object p)
+        {
+            var phoneWindow = new PhoneView();
+            phoneWindow.Show();                                  
+        }
+        private bool CanOpenPhoneDialogCommandExecuted(object p)=> true;
+        
+        #endregion
+
 
         #endregion
 
