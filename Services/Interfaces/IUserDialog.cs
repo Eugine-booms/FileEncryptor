@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace FileEncryptor.Services.Interfaces
 {
@@ -15,5 +16,7 @@ namespace FileEncryptor.Services.Interfaces
         void Information(string title, string message);
         void Warning(string title, string message);
         void Error(string title, string message);
+
+        (IProgress<double> progress, IProgress<string> status, CancellationToken cancel, Action Close) ShowProgress(string Title);
     }
 }

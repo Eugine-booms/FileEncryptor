@@ -122,19 +122,29 @@ namespace FileEncryptor.ViewModels
 
 
             processCancelation = new CancellationTokenSource();
-            var cancelToken = processCancelation.Token;
+           // var cancelToken = processCancelation.Token;
+
+            var (progres_info, status_info, operation_Cancel, close_window) = _userDialog.ShowProgress("Шифрование");
+            status_info.Report($"Шифрование файла { file.Name}");
+
+            var combine_cancelation = CancellationTokenSource.CreateLinkedTokenSource(processCancelation.Token, operation_Cancel);
+
             DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
-            var progress = new Progress<double>(p => ProgressValue = p);
+
+            var progress = new Progress<double>(p => ProgressValue = p);   
+            //progres_info?.Report(ProgressValue);
+            
+
             try
             {
                 var encryptor_task = _encryptor.CryptAcync(
-                    Methodd.Encrypd,
-                    file.FullName,
-                    destanation_filePath,
-                    Password,
-                    102400,
-                    progress,
-                    processCancelation.Token);
+                    mode: Methodd.Encrypd,
+                    sourcePath: file.FullName,
+                    destinationPath: destanation_filePath,
+                    password: Password,
+                    bufferLenght: 102400,
+                    progress: progres_info,
+                    Cancel: combine_cancelation.Token);
                 await encryptor_task;
             }
             catch (OperationCanceledException)
@@ -146,6 +156,7 @@ namespace FileEncryptor.ViewModels
             {
                 processCancelation.Dispose();
                 processCancelation = null;
+                close_window();
             }
 
             ActivateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
