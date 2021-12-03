@@ -12,7 +12,6 @@
         Title="{Binding Path=MainViewModel.Title, Source={StaticResource Locator}}" Height="224" Width="539"
         Name="main">
     <DockPanel>
-
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
                 <MenuItem Header="Выход" CommandParameter="{Binding }">
@@ -31,7 +30,34 @@
             <StatusBarItem DockPanel.Dock="Right">
                 <ResizeGrip  />
             </StatusBarItem>
-            затрачено мс <StatusBarItem Content="{Binding Timer}"/> mc
+            <StatusBarItem DockPanel.Dock="Right">
+                <DockPanel>
+                    <DockPanel.Style>
+                        <Style TargetType="DockPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=ProgressValue}" Value="0">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=ProgressValue}" Value="1">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DockPanel.Style>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding ProgressValue, StringFormat=p1}" Margin="2 0" TextAlignment="Right"/>
+                    <ProgressBar DockPanel.Dock="Right" Height="15" Width="120" Maximum="1" Value="{Binding ProgressValue}"  Margin="2 0" />
+                </DockPanel>
+            </StatusBarItem>
+            <StatusBarItem >
+                <DockPanel>
+                    <TextBlock Text="Затрачено" Margin="5 0 "/>
+                    <TextBlock Text="{Binding Timer}" Margin="5 0"/>
+                    <TextBlock Text="мс" Margin="5 0"/>
+                </DockPanel>
+            </StatusBarItem>
+
+
+
         </StatusBar>
         <Grid DockPanel.Dock="Top" Margin="5">
             <Grid.Resources>
@@ -81,6 +107,8 @@
                 <Button Content="Расшифровать" Margin="5" Padding="15 10" 
                         Command="{Binding DecryptCommand}" 
                         CommandParameter="{Binding SelectedFile}"/>
+                <Button Content="Отменить" Margin="5" Padding="15 10"
+                        Command="{Binding CancelCryptCommand}"/>
             </UniformGrid>
         </Grid>
     </DockPanel>
