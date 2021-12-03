@@ -1,14 +1,17 @@
 ﻿using FileEncryptor.Infrastructure.Commands;
 using FileEncryptor.Infrastructure.Commands.Base;
+using FileEncryptor.Services;
 using FileEncryptor.Services.Interfaces;
 using FileEncryptor.Views;
 
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace FileEncryptor.ViewModels
 {
@@ -17,7 +20,20 @@ namespace FileEncryptor.ViewModels
 
         private readonly IUserDialog _userDialog;
         private readonly IEncryptor _encryptor;
-        private const string __encryptorDefaultFileSuffix=".encript";
+        private const string __encryptorDefaultFileSuffix = ".encript";
+        private CancellationTokenSource  processCancelation;
+
+        #region  double Progress Прогресс
+        ///<summary> Прогресс
+        private double _ProgressValue;
+        ///<summary> Прогресс
+        public double ProgressValue
+        {
+            get => _ProgressValue;
+            set => Set(ref _ProgressValue, value, nameof(ProgressValue));
+        }
+        #endregion
+
 
         #region  string Password Пароль
         ///<summary> Пароль
@@ -33,7 +49,7 @@ namespace FileEncryptor.ViewModels
 
         #region  double Timer Таймер
         ///<summary> Таймер
-        private double _Timer=0;
+        private double _Timer = 0;
         ///<summary> Таймер
         public double Timer
         {
@@ -97,35 +113,48 @@ namespace FileEncryptor.ViewModels
         {
             var file = p as FileInfo ?? SelectedFile;
             if (file is null) return;
-
             var defaultFileName = file.FullName + __encryptorDefaultFileSuffix;
             if (!(_userDialog.SaveFile(
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
+            
+            
             var timer = Stopwatch.StartNew();
 
-            DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
-            
-            
 
+            processCancelation = new CancellationTokenSource();
+            var cancelToken = processCancelation.Token;
+            DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
+            var progress = new Progress<double>(p => ProgressValue = p);
             try
             {
-                var encryptor_task = _encryptor.EncryptAcync(file.FullName, destanation_filePath, Password);
+                var encryptor_task = _encryptor.CryptAcync(
+                    Methodd.Encrypd,
+                    file.FullName,
+                    destanation_filePath,
+                    Password,
+                    102400,
+                    progress,
+                    processCancelation.Token);
                 await encryptor_task;
             }
             catch (OperationCanceledException)
             {
+                _userDialog.Error("Шифратор", "Операция была отменена");
 
-                
             }
-            
+            finally
+            {
+                processCancelation.Dispose();
+                processCancelation = null;
+            }
 
             ActivateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
-           
 
 
-            
+
+
             timer.Stop();
-            _userDialog.Information("Шифрование", $"Шифрование выполнено успешно {timer.Elapsed.TotalMilliseconds} мс");
+            //_userDialog.Information("Шифрование", $"Шифрование выполнено успешно {timer.Elapsed.TotalMilliseconds} мс");
             Timer = timer.Elapsed.TotalMilliseconds;
 
 
@@ -147,28 +176,47 @@ namespace FileEncryptor.ViewModels
         {
             var file = p as FileInfo ?? SelectedFile;
             if (file is null) return;
-            var defaultFileName = file.FullName.EndsWith(__encryptorDefaultFileSuffix) ? 
-                file.FullName.Substring(0, file.FullName.Length-__encryptorDefaultFileSuffix.Length) : file.FullName;
+            var defaultFileName = file.FullName.EndsWith(__encryptorDefaultFileSuffix) ?
+                file.FullName.Substring(0, file.FullName.Length - __encryptorDefaultFileSuffix.Length) : file.FullName;
             if (!(_userDialog.SaveFile(
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
             var timer = Stopwatch.StartNew();
 
 
             DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
-            
 
-            var decryptionTask=_encryptor.DecryptAcync(file.FullName, destanation_filePath, Password);
-            bool success=false;
+            var action = new Action<double>(SetProgress);
+            var progress = new Progress<double>(action);
+            var progress1 = new Progress<double>(new Action<double>(p => ProgressValue = p));
+
+            processCancelation = new CancellationTokenSource();
+            var token = processCancelation.Token;
+            
+            var decryptionTask = _encryptor.CryptAcync(
+                                                               mode: Methodd.DeCrypt,
+                                                               sourcePath: file.FullName,
+                                                               destinationPath: destanation_filePath,
+                                                               password: Password,
+                                                               bufferLenght: 102400,
+                                                               progress: progress,
+                                                               Cancel: token);
+            bool success = false;
             try
             {
                 success = await decryptionTask;
+                Thread.Sleep(1000);
+                processCancelation.Cancel();
             }
             catch (OperationCanceledException)
             {
 
-                throw;
+                _userDialog.Information("Шифратор", "Операция была отменена");
             }
-            
+            finally
+            {
+                processCancelation.Dispose();
+                processCancelation = null;
+            }
 
             ActivateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
 
@@ -176,16 +224,29 @@ namespace FileEncryptor.ViewModels
             timer.Stop();
             if (success)
             {
-                _userDialog.Information("Шифрование", $"Дешифрирование успешно выполнено! за  {timer.Elapsed.TotalMilliseconds} мс");
-            Timer = timer.ElapsedMilliseconds;
+                //    _userDialog.Information("Шифрование", $"Дешифрирование успешно выполнено! за  {timer.Elapsed.TotalMilliseconds} мс");
+                Timer = timer.ElapsedMilliseconds;
             }
-            else
-                _userDialog.Error("Шифрование", "Дешифрирование выполнено с ошибкой! Указан неверный пароль");
+
+            //  _userDialog.Error("Шифрование", "Дешифрирование выполнено с ошибкой! Указан неверный пароль");
         }
         private bool CanDecryptCommandExecute(object p)
         {
             return (p is FileInfo file && file.Exists || SelectedFile != null) && !string.IsNullOrWhiteSpace(Password);
         }
+        #endregion
+
+
+        #region Команда CancelCrypt
+        private ICommand _CancelCryptCommand;
+        /// <summary>"Описание"</summary>
+        public ICommand CancelCryptCommand =>
+        _CancelCryptCommand ??=
+        new LambdaCommand(OnCancelCryptCommandExecuted, CanCancelCryptCommandExecute);
+        private void OnCancelCryptCommandExecuted(object p) => processCancelation.Cancel();
+        private bool CanCancelCryptCommandExecute(object p) => processCancelation != null;
+
+
         #endregion
 
 
@@ -198,10 +259,10 @@ namespace FileEncryptor.ViewModels
         private void OnOpenPhoneDialogCommandExecute(object p)
         {
             var phoneWindow = new PhoneView();
-            phoneWindow.Show();                                  
+            phoneWindow.Show();
         }
-        private bool CanOpenPhoneDialogCommandExecuted(object p)=> true;
-        
+        private bool CanOpenPhoneDialogCommandExecuted(object p) => true;
+
         #endregion
 
 
@@ -216,11 +277,15 @@ namespace FileEncryptor.ViewModels
 
         #endregion
 
+        private void SetProgress(double p)
+        {
+            ProgressValue = p;
+        }
         private bool ActivateCommands(ICommand[] lambdaCommands)
         {
             foreach (var command in lambdaCommands)
             {
-                ((Command) command).Executable = true;
+                ((Command)command).Executable = true;
             }
             return true;
         }
@@ -228,7 +293,7 @@ namespace FileEncryptor.ViewModels
         {
             foreach (var command in lambdaCommands)
             {
-               ((Command) command).Executable = false;
+                ((Command)command).Executable = false;
             }
             return true;
         }
