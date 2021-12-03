@@ -3,9 +3,11 @@ using FileEncryptor.Infrastructure.Commands.Base;
 using FileEncryptor.Services.Interfaces;
 using FileEncryptor.Views;
 
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace FileEncryptor.ViewModels
@@ -101,10 +103,24 @@ namespace FileEncryptor.ViewModels
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
             var timer = Stopwatch.StartNew();
 
-            ((Command)EncryptCommand).Executable = false;
-            var encryptor_task= _encryptor.EncryptAcync(file.FullName, destanation_filePath, Password);
-            await encryptor_task;
-            ((Command)EncryptCommand).Executable = true;
+            DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
+            
+            
+
+            try
+            {
+                var encryptor_task = _encryptor.EncryptAcync(file.FullName, destanation_filePath, Password);
+                await encryptor_task;
+            }
+            catch (OperationCanceledException)
+            {
+
+                
+            }
+            
+
+            ActivateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
+           
 
 
             
@@ -137,10 +153,24 @@ namespace FileEncryptor.ViewModels
                 "Сохранение файла", out var destanation_filePath, defaultFileName))) return;
             var timer = Stopwatch.StartNew();
 
-            ((Command)DecryptCommand).Executable = false;
+
+            DeactevateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
+            
+
             var decryptionTask=_encryptor.DecryptAcync(file.FullName, destanation_filePath, Password);
-            var success = await decryptionTask;
-            ((Command)DecryptCommand).Executable = true;
+            bool success=false;
+            try
+            {
+                success = await decryptionTask;
+            }
+            catch (OperationCanceledException)
+            {
+
+                throw;
+            }
+            
+
+            ActivateCommands(new ICommand[] { DecryptCommand, EncryptCommand, SelectFileCommand });
 
 
             timer.Stop();
@@ -185,6 +215,24 @@ namespace FileEncryptor.ViewModels
         }
 
         #endregion
+
+        private bool ActivateCommands(ICommand[] lambdaCommands)
+        {
+            foreach (var command in lambdaCommands)
+            {
+                ((Command) command).Executable = true;
+            }
+            return true;
+        }
+        private bool DeactevateCommands(ICommand[] lambdaCommands)
+        {
+            foreach (var command in lambdaCommands)
+            {
+               ((Command) command).Executable = false;
+            }
+            return true;
+        }
+
     }
 }
 
