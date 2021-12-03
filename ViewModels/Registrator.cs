@@ -8,6 +8,8 @@ namespace FileEncryptor.ViewModels
    static class  Registrator
     {
         internal static IServiceCollection RegisterViewModel(this IServiceCollection servises) => servises
-            .AddSingleton<MainWindowViewModel>();
+            .AddSingleton<MainWindowViewModel>()
+            .AddTransient<PhoneViewModel>();
+
     }
 }

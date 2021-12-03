@@ -23,7 +23,9 @@
                 <MenuItem Header="Выход2" Command="{Binding Source={comm:CloseWindow Executable=True}}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
                 <MenuItem Header="Выход3" Command="{StaticResource CloseWindowCommand}" CommandParameter=""/>
             </MenuItem>
-
+            <MenuItem Header="Телефоны">
+                <MenuItem Header="Окно телефонов" Command="{Binding OpenPhoneDialogCommand}"/>
+            </MenuItem>
         </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem DockPanel.Dock="Right">

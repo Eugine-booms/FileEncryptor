@@ -8,5 +8,6 @@ namespace FileEncryptor.ViewModels
   internal class ViewModelLocator
     {
         public MainWindowViewModel MainViewModel => App.Services.GetRequiredService<MainWindowViewModel>();
+        public PhoneViewModel PhoneVM => App.Services.GetRequiredService<PhoneViewModel>();
     }
 }
