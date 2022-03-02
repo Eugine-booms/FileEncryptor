@@ -3,5 +3,5 @@
         xmlns:l="clr-namespace:FileEncryptor.Infrastructure.Commands">
 
 
-    <l:CloseWindow x:Key="CloseWindowCommand"/>
+    <l:CloseWindowCommand x:Key="CloseWindowCommand"/>
 </ResourceDictionary>

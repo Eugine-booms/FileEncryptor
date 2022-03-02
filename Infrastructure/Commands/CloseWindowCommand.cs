@@ -6,9 +6,9 @@ using System.Windows.Markup;
 
 namespace FileEncryptor.Infrastructure.Commands
 {
-    [MarkupExtensionReturnType(typeof(CloseWindow))]
+    [MarkupExtensionReturnType(typeof(CloseWindowCommand))]
     [ContentProperty("Executable")]
-    class CloseWindow : Base.Command
+    class CloseWindowCommand : Base.Command
     {
         
         protected override void Execute(object parameter)

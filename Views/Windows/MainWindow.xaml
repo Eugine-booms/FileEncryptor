@@ -16,7 +16,7 @@
             <MenuItem Header="Файл">
                 <MenuItem Header="Выход" CommandParameter="{Binding }">
                     <MenuItem.Command >
-                        <comm:CloseWindow Executable="True"/>
+                        <comm:CloseWindowCommand Executable="True"/>
                     </MenuItem.Command>
                 </MenuItem>
                 <MenuItem Header="Выход2" Command="{Binding Source={comm:CloseWindow Executable=True}}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
